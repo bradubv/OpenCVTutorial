@@ -1,7 +1,9 @@
+package org.team1635.vision;
+
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.*;
 
-public class FileProcessor {
+public class FileLoader {
 
 	public Mat openFile(String fileName) throws Exception {
 		Mat newImage = Imgcodecs.imread(fileName);

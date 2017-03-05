@@ -1,3 +1,5 @@
+package org.team1635.vision;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.*;
@@ -252,7 +254,8 @@ public class PipelineThree{
 		      MatOfPoint2f poly = polys.get(i);
 		      
 		      if (poly.rows() == 4) {
-		      Quadrilateral quad = new Quadrilateral(poly);
+		      Quadrilateral quad = new Quadrilateral();
+		      quad.fromMatOfPoint2f(poly);
 		      int height = quad.getHeight();
 		      
 			  if (height > maxHeight) {
