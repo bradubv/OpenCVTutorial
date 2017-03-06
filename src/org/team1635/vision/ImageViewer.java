@@ -47,6 +47,7 @@ public class ImageViewer {
 			Mat resultImage = pipeline.hsvThresholdOutput();
 			Image tmpImage = toBufferedImage(resultImage);
 			resultView.setIcon(new ImageIcon(tmpImage));
+			System.out.println("Processing Results: Target Candidate Count = " + pipeline.getTargetCandidateCount());
 		}
 	}
 

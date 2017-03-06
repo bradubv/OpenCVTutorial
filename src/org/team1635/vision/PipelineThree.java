@@ -22,6 +22,11 @@ public class PipelineThree{
 	private ArrayList<MatOfPoint2f> aproxPolysOutput = new ArrayList<MatOfPoint2f>();
 	private int distance;
 	private int angle;
+	private int targetCandidateCount;
+	private int leftStripWidth;
+	private int stripDistance;
+	private int lowLeftX;
+	private int lowLeftY;
 
 //	static {
 //		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -239,6 +244,7 @@ public class PipelineThree{
     }
     
 	private void drawPolyVertices(Mat img, ArrayList<MatOfPoint2f> polys) {
+		this.targetCandidateCount = polys.size(); //this will probably not end up on the Rio
 		for (int i = 0; i < polys.size(); i++) {
 	      MatOfPoint2f poly = polys.get(i);	
 		  for (int vertCnt = 0; vertCnt < poly.rows(); vertCnt++) {
@@ -246,6 +252,10 @@ public class PipelineThree{
 			Imgproc.circle(img, point, 3, new Scalar(255, 0, 0));
 		  }
 		}
+	}
+	
+	public int getTargetCandidateCount() {
+		return this.aproxPolysOutput.size();
 	}
 	
 	private int measureDistance (ArrayList<MatOfPoint2f> polys) {
