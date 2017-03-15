@@ -18,7 +18,9 @@ import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
+
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 
 public class ImageViewer {
 	private JFrame frame;
@@ -30,7 +32,7 @@ public class ImageViewer {
 	private boolean allowImageLoad;
 	private boolean processImage;
 	
-	private String imgPath = "C:\\Users\\Bogdan\\eclipse\\neon\\OpenCVTutorial\\imgs\\";
+	private String imgPath = "C:\\Users\\Bogdan\\git\\OpenCVTutorial\\imgs\\";
 
 	public void loadImage(Mat image) {
 		this.image = image;
@@ -43,10 +45,15 @@ public class ImageViewer {
 		
 		if (processImage) {
 			PipelineThree pipeline = new PipelineThree();
+			pipeline.setAreaOfInterest(22, 37, 32, 66); 
 			pipeline.process(image);
 			Mat resultImage = pipeline.hsvThresholdOutput();
 			Image tmpImage = toBufferedImage(resultImage);
 			resultView.setIcon(new ImageIcon(tmpImage));
+
+			Image inputImage = toBufferedImage(pipeline.getEnhancedInput());
+			imageView.setIcon(new ImageIcon(inputImage));
+
 			System.out.println("Processing Results: Target Candidate Count = " + pipeline.getTargetCandidateCount());
 		}
 	}
