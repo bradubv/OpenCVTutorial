@@ -49,24 +49,30 @@ public class PipelineThree {
 		enhanceInput(source0);
 //		double[] hsvThresholdHue = { 0.0, 178.4641638225256 };
 //		double[] hsvThresholdHue = { 19.0, 22.0 };
-		double[] hsvThresholdHue = { 11.0, 15.0 }; //from Row 45 cols from 23 to 34 
+//		double[] hsvThresholdHue = { 11.0, 15.0 }; //from Row 45 cols from 23 to 34: buggy x swap y 
+		double[] hsvThresholdHue = { 52.0, 150.0 }; //from Row 45 cols from 23 to 34 
 //		double[] hsvThresholdSaturation = { 0.0, 41.774744027303754 };
 //		double[] hsvThresholdSaturation = { 118.0, 140.0 };		
-		double[] hsvThresholdSaturation = { 131.0, 168.0 }; //from Row 45 cols from 23 to 34
+//		double[] hsvThresholdSaturation = { 131.0, 168.0 }; //from Row 45 cols from 23 to 34: buggy x swap y
+		double[] hsvThresholdSaturation = { 3.0, 28.0 }; //from Row 45 cols from 23 to 34
+//		double[] hsvThresholdSaturation = { -125.0, -88.0 }; //from Row 45 cols from 23 to 34 signed
 //		double[] hsvThresholdValue = { 210.97122302158272, 255.0 };
 //		double[] hsvThresholdValue = { 155.0, 185.0 };
-		double[] hsvThresholdValue = { 128.0, 150.0 }; //from Row 45 cols from 23 to 34 
+//		double[] hsvThresholdValue = { 128.0, 150.0 }; //from Row 45 cols from 23 to 34 
+		double[] hsvThresholdValue = { 245.0, 255.0 }; //from Row 45 cols from 23 to 34 
+//		double[] hsvThresholdValue = { -128.0, -106.0 }; //from Row 45 cols from 23 to 34 signed
+
 		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
-        //System.out.println("debug: process: after hsvThreshold:  " + showMatInfo(hsvThresholdOutput));
-		//showOutVals(hsvThresholdOutput, showValStartX, showValEndX, showValStartY, showValEndY); //debug
+        System.out.println("debug: process: after hsvThreshold:  " + showMatInfo(hsvThresholdOutput));
+		showOutVals(hsvThresholdOutput, showValStartX, showValEndX, showValStartY, showValEndY); //debug
 
 		// Step Find_Contours0:
 		//Mat findContoursInput = hsvThresholdOutput;
 		Mat findContoursInput = hsvThresholdOutput.clone();
 		boolean findContoursExternalOnly = false;
 		findContours(findContoursInput, findContoursExternalOnly, findContoursOutput);
-        //System.out.println("debug: process: after findCountours:  " + showMatInfo(hsvThresholdOutput));
-		//showOutVals(hsvThresholdOutput, 70, 73, 48, 48); //debug
+        System.out.println("debug: process: after findCountours:  " + showMatInfo(hsvThresholdOutput));
+		showOutVals(hsvThresholdOutput, showValStartX, showValEndX, showValStartY, showValEndY); //debug
 
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
@@ -95,6 +101,9 @@ public class PipelineThree {
 
 		// Draw aproxPoly vertices onto
 		drawPolyVertices(hsvThresholdOutput, aproxPolysOutput);
+        System.out.println("debug: process: after drawPolyVertices:  " + showMatInfo(hsvThresholdOutput));
+		showOutVals(hsvThresholdOutput, showValStartX, showValEndX, showValStartY, showValEndY); //debug
+		showOutVals(hsvThresholdOutput, 1, 1, 1, 1); //debug
 
 		// Set distance
 		distance = measureDistance(aproxPolysOutput);
@@ -107,6 +116,8 @@ public class PipelineThree {
 	 * @return Mat output from HSV_Threshold.
 	 */
 	public Mat hsvThresholdOutput() {
+        System.out.println("debug: process: in hsvThresholdOutput():  " + showMatInfo(hsvThresholdOutput));
+		showOutVals(hsvThresholdOutput, showValStartX, showValEndX, showValStartY, showValEndY); //debug
 		return hsvThresholdOutput;
 	}
 	
@@ -175,11 +186,12 @@ public class PipelineThree {
 		Mat tmpMat = new Mat(new Size(320,240), CvType.CV_8UC3);
 		Imgproc.cvtColor(input, tmpMat, Imgproc.COLOR_BGR2HSV);
         System.out.println("debug: hsvThreshold: tmpMat after conversion to HSV  " + this.showMatInfo(tmpMat));
-//		showVals(tmpMat, showValStartX, showValEndX, showValStartY, showValEndY); //debug
+		showVals(tmpMat, showValStartX, showValEndX, showValStartY, showValEndY); //debug
 		showRanges(tmpMat, showValStartX, showValEndX, showValStartY, showValEndY); //debug
 
         System.out.println("debug: hsvThreshold: out before inRange :  " + this.showMatInfo(out));
-		Core.inRange(tmpMat, new Scalar(hue[0], sat[0], val[0]), new Scalar(hue[1], sat[1], val[1]), out);
+//		Core.inRange(tmpMat, new Scalar(hue[0], sat[0], val[0]), new Scalar(hue[1], sat[1], val[1]), out);
+        inRange(tmpMat, new Scalar(hue[0], sat[0], val[0]), new Scalar(hue[1], sat[1], val[1]), out);
         System.out.println("debug: hsvThreshold: out after inRange :  " + this.showMatInfo(out));
 	}
 
@@ -332,9 +344,9 @@ public class PipelineThree {
 		}
 		
 	    //Put here anything you want to draw on the output.
-		Point startPoint = new Point(23, 45); //debug
-		Point endPoint = new Point(34, 45); //debug
-		Imgproc.line(img, startPoint, endPoint, new Scalar(60, 0, 0)); //debug
+		//Point startPoint = new Point(showValStartX, showValStartY); //debug
+		//Point endPoint = new Point(showValEndX, showValEndY); //debug
+		//Imgproc.line(img, startPoint, endPoint, new Scalar(60, 0, 0)); //debug
 		Imgproc.rectangle(img, areaOfInterest.tl(), areaOfInterest.br(), new Scalar(100, 0, 0), 2); //debug
 
 	}
@@ -368,12 +380,14 @@ public class PipelineThree {
 		byte[] unsignedPoint = new byte[3];
 		for (int y = startY; y <= endY; y++) {
 			for (int x = startX; x <= endX; x++) {
-				img.get(x, y, unsignedPoint); // debug
+				img.get(y, x, unsignedPoint); // debug
 				int hue = unsignedPoint[0] & 0xff;
 				int sat = unsignedPoint[1] & 0xff;
 				int val = unsignedPoint[2] & 0xff;
 				System.out.print("x = " + x + "; y = " + y + "; Hue = " + hue);
 				System.out.println("; Sat = " + sat + "; Val = " + val);
+				System.out.print("x = " + x + "; y = " + y + "; Hue = " + unsignedPoint[0]);
+				System.out.println("; Sat = " + unsignedPoint[1] + "; Val = " + unsignedPoint[2]);
 			}
 		}
 		System.out.println("------------");
@@ -383,7 +397,7 @@ public class PipelineThree {
 		byte[] unsignedPoint = new byte[1];
 		for (int y = startY; y <= endY; y++) {
 			for (int x = startX; x <= endX; x++) {
-				img.get(x, y, unsignedPoint); // debug
+				img.get(y, x, unsignedPoint); // debug
 				int val = unsignedPoint[0] & 0xff;
 				System.out.println("x = " + x + "; y = " + y + "; Val = " + val);
 			}
@@ -412,19 +426,30 @@ public class PipelineThree {
 		int minHue = 180, maxHue = 0;
 		int minSat= 255, maxSat = 0;
 		int minVal= 255, maxVal = 0;
+		int minUnHue = 127, maxUnHue = -128;
+		int minUnSat= 127, maxUnSat = -128;
+		int minUnVal= 127, maxUnVal = -128;
 		
 		for (int y = startY; y <= endY; y++) {
 			for (int x = startX; x <= endX; x++) {
-				img.get(x, y, unsignedPoint); // debug
+				img.get(y, x, unsignedPoint); // debug
 				int hue = unsignedPoint[0] & 0xff;
 				int sat = unsignedPoint[1] & 0xff;
 				int val = unsignedPoint[2] & 0xff;
+				
 				if (hue > maxHue) maxHue = hue;
 				if (hue < minHue) minHue = hue;
 				if (sat > maxSat) maxSat = sat;
 				if (sat < minSat) minSat = sat;
 				if (val > maxVal) maxVal = val;
 				if (val < minVal) minVal = val;
+				
+				if (unsignedPoint[0] > maxUnHue) maxUnHue = unsignedPoint[0];
+				if (unsignedPoint[0] < minUnHue) minUnHue = unsignedPoint[0];
+				if (unsignedPoint[1] > maxUnSat) maxUnSat = unsignedPoint[1];
+				if (unsignedPoint[1] < minUnSat) minUnSat = unsignedPoint[1];
+				if (unsignedPoint[2] > maxUnVal) maxUnVal = unsignedPoint[2];
+				if (unsignedPoint[2] < minUnVal) minUnVal = unsignedPoint[2];
 			}
 		}
 		System.out.print("Area: x from " + startX + " to " + endX);
@@ -432,10 +457,42 @@ public class PipelineThree {
 		System.out.println("Hue = " + minHue + " to " + maxHue);
 		System.out.println("Sat = " + minSat + " to " + maxSat);
 		System.out.println("Val = " + minVal + " to " + maxVal);
+		System.out.println("UnHue = " + minUnHue + " to " + maxUnHue);
+		System.out.println("UnSat = " + minUnSat + " to " + maxUnSat);
+		System.out.println("UnVal = " + minUnVal + " to " + maxUnVal);
 		System.out.println("------------");
 	}
 
-	
+	void inRange(Mat in, Scalar min, Scalar max, Mat out) {
+		Mat result = new Mat(new Size(in.cols(),in.rows()), CvType.CV_8UC1);
+		byte[] unsignedPoint = new byte[3];
+		double[] white = new double[]{255};
+		double[] black = new double[]{0};
+
+		for (int y = 0; y < in.rows(); y++) {
+			for (int x = 0; x <= in.cols(); x++) {
+				//get takes (row, col, buffer) which is (y, x, buffer)
+				in.get(y, x, unsignedPoint); // debug
+				int hue = unsignedPoint[0] & 0xff;
+				int sat = unsignedPoint[1] & 0xff;
+				int val = unsignedPoint[2] & 0xff;
+				
+				if (
+					((hue >= min.val[0]) && (hue <= max.val[0])) &&
+				    ((sat >= min.val[1]) && (sat <= max.val[1])) &&
+				    ((val >= min.val[2]) && (val <= max.val[2]))
+				    ) {
+					result.put(y, x, white);
+				} else {
+					result.put(y, x, black);
+				}
+				
+				//if ((y = 45) && (x > 22) && (x < 35)) {
+			}
+		}
+		result.assignTo(out);
+	}
+	//Core.inRange(tmpMat, new Scalar(hue[0], sat[0], val[0]), new Scalar(hue[1], sat[1], val[1]), out);
 	// static void describeContour(MatOfPoint contour) {
 	// System.out.println(" rows = " + contour.rows());
 	// System.out.println(" columns = " + contour.cols());

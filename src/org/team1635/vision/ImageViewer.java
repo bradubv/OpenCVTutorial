@@ -48,6 +48,7 @@ public class ImageViewer {
 			pipeline.setAreaOfInterest(22, 37, 32, 66); 
 			pipeline.process(image);
 			Mat resultImage = pipeline.hsvThresholdOutput();
+			System.out.println("debug: Type should be BYTE GRAY");
 			Image tmpImage = toBufferedImage(resultImage);
 			resultView.setIcon(new ImageIcon(tmpImage));
 
@@ -132,6 +133,9 @@ public class ImageViewer {
 		int type = BufferedImage.TYPE_BYTE_GRAY;
 		if (matrix.channels() > 1) {
 			type = BufferedImage.TYPE_3BYTE_BGR;
+			System.out.println("Type is 3BYTE BGR"); //debug
+		} else {
+			System.out.println("Type is BYTE GRAY"); //debug
 		}
 		int bufferSize = matrix.channels() * matrix.cols() * matrix.rows();
 		byte[] buffer = new byte[bufferSize];
