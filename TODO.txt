@@ -1,0 +1,8 @@
+Calculate distance based on the number of pixels
+Determine turn size based on the distance from corner of left target to center.
+
+Find out why the Quad code is bombing on some of the EveningHome pictures
+
+Draw target on the Dashboard
+
+Button to switch cameras on the RaspPi

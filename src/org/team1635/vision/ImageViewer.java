@@ -2,6 +2,7 @@ package org.team1635.vision;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
@@ -34,10 +36,12 @@ public class ImageViewer {
 	private JFrame frame;
 	private JLabel imageView;
 	private JLabel resultView;
-	private JButton button;
+	private JButton loadButton;
 	private JButton prevButton;
 	private JButton nextButton;
-	private JTextPane targetCount;
+	
+	private JTextField targetCount;
+	private JTextField distance;
 	
 	private Mat image;
 	private boolean allowImageLoad;
@@ -133,6 +137,7 @@ public class ImageViewer {
 			imageView.setIcon(new ImageIcon(inputImage));
 
 			targetCount.setText(Integer.toString(pipeline.getTargetCandidateCount()));
+			distance.setText(Integer.toString(pipeline.getDistance()));
 		}
 	}
 
@@ -160,13 +165,13 @@ public class ImageViewer {
 
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new BorderLayout());
-			button = new JButton("Load Image");
-			button.addMouseListener(new MouseAdapter() {
+			loadButton = new JButton("Load Image");
+			loadButton.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					final JFileChooser fc = new JFileChooser(imgPath);
 
-					int returnVal = fc.showOpenDialog(button);
+					int returnVal = fc.showOpenDialog(loadButton);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
 						image = loadMatFromFile(file.getAbsolutePath());
@@ -175,7 +180,7 @@ public class ImageViewer {
 
 				}
 			});
-			buttonPane.add(button, BorderLayout.NORTH);
+			buttonPane.add(loadButton, BorderLayout.NORTH);
 
 			prevButton = new JButton("Previous");
 			prevButton.addActionListener(new ActionListener() {
@@ -188,7 +193,7 @@ public class ImageViewer {
 					frame.setTitle(file.getName());
 				}
 			});
-			buttonPane.add(prevButton, BorderLayout.CENTER);
+			buttonPane.add(prevButton, BorderLayout.WEST);
 			prevButton.setEnabled(false);
 
 			nextButton = new JButton("Next");
@@ -204,12 +209,26 @@ public class ImageViewer {
 			});
 			buttonPane.add(nextButton, BorderLayout.EAST);
 			
-			targetCount = new JTextPane();
+			JPanel valuesPane = new JPanel();
+			valuesPane.setLayout(new GridLayout(0,4));
+
+			JLabel targetCountLabel = new JLabel("Candidate Poly Count: ");
+			targetCountLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+			valuesPane.add(targetCountLabel);
+			targetCount = new JTextField();
 			targetCount.setText("N/A");
 			targetCount.setEditable(false);
-			//targetCount.setEnabled(false); //makes it barely readable
-			buttonPane.add(targetCount, BorderLayout.SOUTH);
+			valuesPane.add(targetCount);
 
+			JLabel distanceLabel = new JLabel("Distance: ");
+			distanceLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+			valuesPane.add(distanceLabel);
+			distance = new JTextField();
+			distance.setText("N/A");
+			distance.setEditable(false);
+			valuesPane.add(distance);
+
+			buttonPane.add(valuesPane, BorderLayout.SOUTH);
 			frame.add(buttonPane, BorderLayout.SOUTH);
 		}
 
