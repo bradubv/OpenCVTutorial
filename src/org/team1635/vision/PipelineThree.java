@@ -437,7 +437,11 @@ public class PipelineThree {
 	}
 
 	public int getDistance() {
-		return leftStrip.getWidth();
+		if (targetAcquired) {
+			return leftStrip.getWidth();
+		} else {
+			return 0;
+		}
 	}
 
 	private int convertWidthToDistance(int width) {
