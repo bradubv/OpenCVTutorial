@@ -1,13 +1,15 @@
-Break up the Pipeline into Basic (base) and DebugPipeline (inherited from base)
+When processing image we get about 10 FPS.  First time to make sure the problem is on the Pi
+, then enable target tracking on demand if it is.
 
-Move BasicPipeline to the Raspberry Pi
+Remove debug notes from the Vision pipeline (or put them there on demand)
+
+The video was lost forever when turning too fast.  Test that.
 
 Get NavX turn based program () into the command based HelloRobot
 
 Determine turn size based on error
 
 Draw target on the Dashboard
-
 
 Make sure we're all the way in.
 
@@ -18,7 +20,9 @@ DONE: Switch Camera on HelloRobot
 DONE: Find out why the Quad code is bombing on some of the EveningHome pictures
 DONE: Put the pi code in Git (refresh the pi code on r2d2)
 DONE: Show horizontal distance from lower left corner of left target to center. Call it error
-
+DONE: Break up the Pipeline into Basic (base) and DebugPipeline (inherited from base)
+DONE: Move BasicPipeline to the Raspberry Pi
+DONE: Only process image in autonomous and if someone told us to in teleop.
 
 62.75 - picking up only right
 67.25 - picking up only left
