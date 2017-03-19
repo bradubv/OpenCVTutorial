@@ -16,20 +16,19 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 
 public class ImageViewer {
@@ -40,13 +39,15 @@ public class ImageViewer {
 	private JButton prevButton;
 	private JButton nextButton;
 	
-	private JTextField targetCount;
-	private JTextField distance;
-	
 	private Mat image;
 	private boolean allowImageLoad;
 	private boolean processImage;
 
+	private JTextField targetCount;
+	private JCheckBox targetAcquired;
+	private JTextField distance;
+	private JTextField error;
+	
 	private String imgPath;
 	private List<File> imageFiles;
 	private int currentImageIdx;
@@ -118,10 +119,9 @@ public class ImageViewer {
 		imageView.setIcon(new ImageIcon(loadedImage));
 
 		if (processImage) {
-			PipelineThree pipeline = new PipelineThree();
-			// pipeline.setAreaOfInterest(22, 37, 32, 66);
+			//VisionPipeline pipeline = new VisionPipeline();
+			DebugPipeline pipeline = new DebugPipeline();
 			pipeline.setAreaOfInterest(23, 39, 32, 65);
-			// from aoi(23,39,32,66)
 			double[] hueRange = { 0.0, 173.0 };
 			double[] satRange = { 0.0, 32.0 };
 			double[] valRange = { 249.0, 255.0 };
@@ -137,7 +137,9 @@ public class ImageViewer {
 			imageView.setIcon(new ImageIcon(inputImage));
 
 			targetCount.setText(Integer.toString(pipeline.getTargetCandidateCount()));
+			targetAcquired.setSelected(pipeline.getTargetAcquired());
 			distance.setText(Integer.toString(pipeline.getDistance()));
+			error.setText(Integer.toString(pipeline.getError()));
 		}
 	}
 
@@ -220,6 +222,14 @@ public class ImageViewer {
 			targetCount.setEditable(false);
 			valuesPane.add(targetCount);
 
+			JLabel targetAcquiredLabel = new JLabel("Target Acquired: ");
+			targetAcquiredLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+			valuesPane.add(targetAcquiredLabel);
+			targetAcquired = new JCheckBox();
+			targetAcquired.setSelected(false);
+			targetAcquired.setEnabled(false);
+			valuesPane.add(targetAcquired);
+
 			JLabel distanceLabel = new JLabel("Distance: ");
 			distanceLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 			valuesPane.add(distanceLabel);
@@ -227,6 +237,14 @@ public class ImageViewer {
 			distance.setText("N/A");
 			distance.setEditable(false);
 			valuesPane.add(distance);
+
+			JLabel errorLabel = new JLabel("Distance from Center: ");
+			errorLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+			valuesPane.add(errorLabel);
+			error = new JTextField();
+			error.setText("N/A");
+			error.setEditable(false);
+			valuesPane.add(error);
 
 			buttonPane.add(valuesPane, BorderLayout.SOUTH);
 			frame.add(buttonPane, BorderLayout.SOUTH);

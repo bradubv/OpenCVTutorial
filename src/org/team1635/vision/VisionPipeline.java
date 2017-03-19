@@ -14,49 +14,30 @@ import org.opencv.imgproc.*;
  *
  * @author GRIP
  */
-public class PipelineThree {
+public class VisionPipeline {
 	// Inputs
-	private Rect areaOfInterest;
-	private double[][] filter;
-	private int showValStartX = 23; // 70
-	private int showValEndX = 34; // 73
-	private int showValStartY = 45; // 48
-	private int showValEndY = 45; // 48
+	protected double[][] filter;
 
 	// Outputs
-	private Mat hsvThresholdOutput = new Mat();
-	private Mat enhancedInput;
+	protected Mat hsvThresholdOutput = new Mat();
 	private ArrayList<MatOfPoint> findContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> filterContoursOutput = new ArrayList<MatOfPoint>();
 	private ArrayList<MatOfPoint> convexHullsOutput = new ArrayList<MatOfPoint>();
-	private ArrayList<MatOfPoint2f> aproxPolysOutput = new ArrayList<MatOfPoint2f>();
-	private double[][] ranges;
+	protected ArrayList<MatOfPoint2f> aproxPolysOutput = new ArrayList<MatOfPoint2f>();	
 
 	private int angle;
-	private int targetCandidateCount;
 	private Quadrilateral leftStrip;
 	private Quadrilateral rightStrip;
-	private int leftStripWidth;
-	private int stripDistance;
 	private boolean targetAcquired = false;
 
-	// static {
-	// System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-	// }
-
-	public PipelineThree() {
+	public VisionPipeline() {
 		filter = new double[3][2];
-		ranges = new double[3][2];
 	}
 
 	public void setFilter(double[] hueRange, double[] satRange, double[] valRange) {
 		this.filter[0] = hueRange;
 		this.filter[1] = satRange;
 		this.filter[2] = valRange;
-	}
-
-	private double[][] getRanges() {
-		return ranges;
 	}
 
 	/**
@@ -66,37 +47,8 @@ public class PipelineThree {
 	public void process(Mat source0) {
 		// Step HSV_Threshold0:
 		Mat hsvThresholdInput = source0;
-		enhanceInput(source0);
-		// double[] hsvThresholdHue = { 0.0, 178.4641638225256 };
-		// double[] hsvThresholdHue = { 19.0, 22.0 };
-		// double[] hsvThresholdHue = { 11.0, 15.0 }; //from Row 45 cols from 23
-		// to 34: buggy x swap y
-		// double[] hsvThresholdHue = { 52.0, 150.0 }; //from Row 45 cols from
-		// 23 to 34
-		// double[] hsvThresholdHue = { 0.0, 173.0 }; //from aoi(23,39,32,66)
-		double[] hsvThresholdHue = filter[0];
 
-		// double[] hsvThresholdSaturation = { 0.0, 41.774744027303754 };
-		// double[] hsvThresholdSaturation = { 118.0, 140.0 };
-		// double[] hsvThresholdSaturation = { 131.0, 168.0 }; //from Row 45
-		// cols from 23 to 34: buggy x swap y
-		// double[] hsvThresholdSaturation = { 3.0, 28.0 }; //from Row 45 cols
-		// from 23 to 34
-		// double[] hsvThresholdSaturation = { 0.0, 32.0 }; //from
-		// aoi(23,39,32,66)
-		double[] hsvThresholdSaturation = filter[1];
-
-		// double[] hsvThresholdValue = { 210.97122302158272, 255.0 };
-		// double[] hsvThresholdValue = { 155.0, 185.0 };
-		// double[] hsvThresholdValue = { 128.0, 150.0 }; //from Row 45 cols
-		// from 23 to 34
-		// double[] hsvThresholdValue = { 245.0, 255.0 }; //from Row 45 cols
-		// from 23 to 34
-		// double[] hsvThresholdValue = { 249.0, 255.0 }; //from
-		// aoi(23,39,32,66)
-		double[] hsvThresholdValue = filter[2]; // from aoi(23,39,32,66)
-
-		hsvThreshold(hsvThresholdInput, hsvThresholdHue, hsvThresholdSaturation, hsvThresholdValue, hsvThresholdOutput);
+		hsvThreshold(hsvThresholdInput, filter, hsvThresholdOutput);
 
 		// Step Find_Contours0:
 		// Mat findContoursInput = hsvThresholdOutput;
@@ -107,7 +59,9 @@ public class PipelineThree {
 		// Step Filter_Contours0:
 		ArrayList<MatOfPoint> filterContoursContours = findContoursOutput;
 		double filterContoursMinArea = 0.0;
-		double filterContoursMinPerimeter = 75.0;
+//		double filterContoursMinPerimeter = 75.0;  //didn't work from afar
+//		double filterContoursMinPerimeter = 60.0;  //doesn't pick up target from 83 inches away.
+		double filterContoursMinPerimeter = 50.0;  //doesn't pick up target from 83 inches away.
 		double filterContoursMinWidth = 0.0;
 		double filterContoursMaxWidth = 1000.0;
 		double filterContoursMinHeight = 0.0;
@@ -129,9 +83,6 @@ public class PipelineThree {
 		// Step Approximate_Polys
 		approxPolys(convexHullsOutput, aproxPolysOutput);
 
-		// Draw aproxPoly vertices onto
-		drawPolyVertices(hsvThresholdOutput, aproxPolysOutput);
-
 		// find the retro-reflective strips
 		findStrips(aproxPolysOutput);
 	}
@@ -143,10 +94,6 @@ public class PipelineThree {
 	 */
 	public Mat hsvThresholdOutput() {
 		return hsvThresholdOutput;
-	}
-
-	public Mat getEnhancedInput() {
-		return enhancedInput;
 	}
 
 	/**
@@ -198,19 +145,31 @@ public class PipelineThree {
 	 * @param output
 	 *            The image in which to store the output.
 	 */
-	private void hsvThreshold(Mat input, double[] hue, double[] sat, double[] val, Mat out) {
-		// System.out.println("Filter: Hue: " + hue[0] + " " + hue[1]); //debug
-		// System.out.println("Filter: Sat: " + sat[0] + " " + sat[1]); //debug
-		// System.out.println("Filter: Val: " + val[0] + " " + val[1]); //debug
-
+	private void hsvThreshold(Mat input, double[][] filter, Mat out) {
+		double[] hueFilterRange = filter[0];
+		double[] satFilterRange = filter[1];
+		double[] valFilterRange = filter[2];
+		
+		Scalar minFilterVals = new Scalar(hueFilterRange[0], satFilterRange[0], valFilterRange[0]);
+		Scalar maxFilterVals = new Scalar(hueFilterRange[1], satFilterRange[1], valFilterRange[1]);
+		
 		// TODO: there is probably no need for this tmpMat. Was put in due to
 		// get(x, y ...) bug
 		Mat tmpMat = new Mat(new Size(320, 240), CvType.CV_8UC3);
 		Imgproc.cvtColor(input, tmpMat, Imgproc.COLOR_BGR2HSV);
 		// showRanges(tmpMat, areaOfInterest);
-		setRanges(tmpMat, areaOfInterest);
+		setRanges(tmpMat);
 
-		Core.inRange(tmpMat, new Scalar(hue[0], sat[0], val[0]), new Scalar(hue[1], sat[1], val[1]), out);
+		Core.inRange(tmpMat, minFilterVals, maxFilterVals, out);
+	}
+
+	/**
+	 * Override this in your debug class to print things from the
+	 * HSV converted image and before we write the greyscale image 
+	 * on top of it 
+	 * @param img Image to be scanned for value ranges
+	 */
+	protected void setRanges(Mat img) {
 	}
 
 	/**
@@ -332,9 +291,14 @@ public class PipelineThree {
 		}
 	}
 
+	/**
+	 * For each contour detected approximate a polygon to reduce the number of
+     * vertices
+     * 
+	 * @param contours The array of contours
+	 * @param polys The array of polygons
+	 */
 	private void approxPolys(ArrayList<MatOfPoint> contours, ArrayList<MatOfPoint2f> polys) {
-		// for each contour detected approximate polygon to reduce the number of
-		// vertices
 		for (int i = 0; i < contours.size(); i++) {
 			MatOfPoint contour = contours.get(i); // took out final
 			MatOfPoint2f contour2f = new MatOfPoint2f();
@@ -343,32 +307,6 @@ public class PipelineThree {
 			Imgproc.approxPolyDP(contour2f, aproxCont, 4, true);
 			polys.add(aproxCont);
 		}
-	}
-
-	private void drawPolyVertices(Mat img, ArrayList<MatOfPoint2f> polys) {
-		this.targetCandidateCount = polys.size(); // this will probably not end
-													// up on the Rio
-		for (int i = 0; i < polys.size(); i++) {
-			MatOfPoint2f poly = polys.get(i);
-			for (int vertCnt = 0; vertCnt < poly.rows(); vertCnt++) {
-				Point point = new Point(poly.get(vertCnt, 0));
-				Imgproc.circle(img, point, 3, new Scalar(255, 0, 0));
-			}
-		}
-
-		// Put here anything you want to draw on the output.
-		// Draw a line
-		// Point startPoint = new Point(showValStartX, showValStartY); //debug
-		// Point endPoint = new Point(showValEndX, showValEndY); //debug
-		Point startPoint = new Point(158, 200); // debug
-		Point endPoint = new Point(162, 230); // debug
-		// Imgproc.line(img, startPoint, endPoint, new Scalar(60, 0, 0));
-		// //debug
-		// Draw a rectangle
-		// Imgproc.rectangle(img, areaOfInterest.tl(), areaOfInterest.br(), new
-		// Scalar(100, 0, 0), 2); //debug
-		Imgproc.rectangle(img, startPoint, endPoint, new Scalar(100, 0, 0), 2); // debug
-
 	}
 
 	public int getTargetCandidateCount() {
@@ -436,9 +374,21 @@ public class PipelineThree {
 		}
 	}
 
+	public boolean getTargetAcquired() {
+		return targetAcquired;
+	}
+	
 	public int getDistance() {
 		if (targetAcquired) {
 			return leftStrip.getWidth();
+		} else {
+			return 0;
+		}
+	}
+	
+	public int getError() {
+		if (targetAcquired) {
+			return (int) (160.0 - leftStrip.getBottomLeft().x);
 		} else {
 			return 0;
 		}
@@ -459,103 +409,5 @@ public class PipelineThree {
 		return retVal;
 	}
 
-	private void showVals(Mat img, int startX, int endX, int startY, int endY) {
-		byte[] unsignedPoint = new byte[3];
-		for (int y = startY; y <= endY; y++) {
-			for (int x = startX; x <= endX; x++) {
-				img.get(y, x, unsignedPoint);
-				int hue = unsignedPoint[0] & 0xff;
-				int sat = unsignedPoint[1] & 0xff;
-				int val = unsignedPoint[2] & 0xff;
-				System.out.print("x = " + x + "; y = " + y + "; Hue = " + hue);
-				System.out.println("; Sat = " + sat + "; Val = " + val);
-				System.out.print("x = " + x + "; y = " + y + "; Hue = " + unsignedPoint[0]);
-				System.out.println("; Sat = " + unsignedPoint[1] + "; Val = " + unsignedPoint[2]);
-			}
-		}
-		System.out.println("------------");
-	}
-
-	private void showOutVals(Mat img, int startX, int endX, int startY, int endY) {
-		byte[] unsignedPoint = new byte[1];
-		for (int y = startY; y <= endY; y++) {
-			for (int x = startX; x <= endX; x++) {
-				img.get(y, x, unsignedPoint);
-				int val = unsignedPoint[0] & 0xff;
-				System.out.println("x = " + x + "; y = " + y + "; Val = " + val);
-			}
-		}
-		System.out.println("------------");
-	}
-
-	private String showMatInfo(Mat mat) {
-		return "Type of mat is " + CvType.typeToString(mat.type()) + "; size is " + mat.cols() + " x " + mat.rows();
-	} // debug
-
-	private void enhanceInput(Mat input) {
-		enhancedInput = input.clone();
-		Imgproc.rectangle(enhancedInput, areaOfInterest.tl(), areaOfInterest.br(), new Scalar(0, 255, 0), 2); // debug
-	}
-
-	public void setAreaOfInterest(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY) {
-		Point topLeft = new Point(topLeftX, topLeftY);
-		Point bottomRight = new Point(bottomRightX, bottomRightY);
-		areaOfInterest = new Rect(topLeft, bottomRight);
-	}
-
-	public void showRanges() {
-		System.out.print("Area: x from " + areaOfInterest.tl().x + " to " + areaOfInterest.br().x);
-		System.out.println(", y from " + areaOfInterest.tl().y + " to " + areaOfInterest.br().y);
-		System.out.println("Hue = " + ranges[0][0] + " to " + ranges[0][1]);
-		System.out.println("Sat = " + ranges[1][0] + " to " + ranges[1][1]);
-		System.out.println("Val = " + ranges[2][0] + " to " + ranges[2][1]);
-		System.out.println("------------");
-	}
-
-	private void setRanges(Mat img, Rect area) {
-		setRanges(img, (int) area.tl().x, (int) area.br().x, (int) area.tl().y, (int) area.br().y);
-	}
-
-	private void setRanges(Mat img, int startX, int endX, int startY, int endY) {
-		byte[] unsignedPoint = new byte[3];
-		int minHue = 180, maxHue = 0;
-		int minSat = 255, maxSat = 0;
-		int minVal = 255, maxVal = 0;
-
-		for (int y = startY; y <= endY; y++) {
-			for (int x = startX; x <= endX; x++) {
-				img.get(y, x, unsignedPoint);
-				int hue = unsignedPoint[0] & 0xff;
-				int sat = unsignedPoint[1] & 0xff;
-				int val = unsignedPoint[2] & 0xff;
-
-				if (hue > maxHue)
-					maxHue = hue;
-				if (hue < minHue)
-					minHue = hue;
-				if (sat > maxSat)
-					maxSat = sat;
-				if (sat < minSat)
-					minSat = sat;
-				if (val > maxVal)
-					maxVal = val;
-				if (val < minVal)
-					minVal = val;
-			}
-		}
-
-		double[] hueRange = new double[2];
-		hueRange[0] = minHue;
-		hueRange[1] = maxHue;
-		double[] satRange = new double[2];
-		satRange[0] = minSat;
-		satRange[1] = maxSat;
-		double[] valRange = new double[2];
-		valRange[0] = minVal;
-		valRange[1] = maxVal;
-		ranges[0] = hueRange;
-		ranges[1] = satRange;
-		ranges[2] = valRange;
-	}
 
 }

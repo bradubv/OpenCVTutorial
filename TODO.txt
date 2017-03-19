@@ -1,15 +1,29 @@
-Put the pi code in Git (refresh the pi code on r2d2)
+Break up the Pipeline into Basic (base) and DebugPipeline (inherited from base)
 
-Calculate distance based on the number of pixels
+Move BasicPipeline to the Raspberry Pi
 
-Determine turn size based on the distance from corner of left target to center.
+Get NavX turn based program () into the command based HelloRobot
+
+Determine turn size based on error
 
 Draw target on the Dashboard
 
-Move pipeline to the Raspberry Pi
 
 Make sure we're all the way in.
+
+Calculate distance based on the number of pixels
 
 DONE: Wiggle on HelloRobot
 DONE: Switch Camera on HelloRobot
 DONE: Find out why the Quad code is bombing on some of the EveningHome pictures
+DONE: Put the pi code in Git (refresh the pi code on r2d2)
+DONE: Show horizontal distance from lower left corner of left target to center. Call it error
+
+
+62.75 - picking up only right
+67.25 - picking up only left
+68.5_not_enough_turn - OK
+68.5_on_target - OK
+68.5_too_much_turn - picking up only right target
+68.5_too_much_turn_2 - OK
+83_on_target - not picking up any target.
