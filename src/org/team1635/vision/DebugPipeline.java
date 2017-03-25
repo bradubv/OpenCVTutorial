@@ -1,6 +1,7 @@
 package org.team1635.vision;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -27,8 +28,10 @@ public class DebugPipeline extends VisionPipeline {
 	public void process(Mat inputImage) {
 		super.process(inputImage);
 		enhanceInput(inputImage);
-		// Draw aproxPoly vertices onto
-		drawPolyVertices(hsvThresholdOutput, aproxPolysOutput);
+		// Draw vertices for the polygons that passed the filter
+		//drawPolyVertices(hsvThresholdOutput, aproxPolysOutput);
+		// draw the quads that we think are the target
+		this.drawQuads(hsvThresholdOutput, quads);
 	}
 	
 	private double[][] getRanges() {
@@ -140,7 +143,8 @@ public class DebugPipeline extends VisionPipeline {
 
 	private void enhanceInput(Mat input) {
 		enhancedInput = input.clone();
-		Imgproc.rectangle(enhancedInput, areaOfInterest.tl(), areaOfInterest.br(), new Scalar(0, 255, 0), 2); // debug
+//		Imgproc.rectangle(enhancedInput, areaOfInterest.tl(), areaOfInterest.br(), new Scalar(0, 255, 0), 2); // debug
+		Imgproc.rectangle(enhancedInput, areaOfInterest.tl(), areaOfInterest.br(), new Scalar(0, 165, 255), 2); // debug
 	}
 
 	public void setAreaOfInterest(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY) {
@@ -175,6 +179,13 @@ public class DebugPipeline extends VisionPipeline {
 		// Scalar(100, 0, 0), 2); //debug
 		Imgproc.rectangle(img, startPoint, endPoint, new Scalar(100, 0, 0), 2); // debug
 	}
+	
+	private void drawQuads(Mat img, List<Quadrilateral> quads) {
+		for (Quadrilateral quad : quads) {
+			Imgproc.rectangle(img, quad.getTopLeft(), quad.getBottomRight(), new Scalar(100, 0, 0), 2);
+		}
+	}
+
 
 	// History of hsv values we tried
 	//

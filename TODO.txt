@@ -1,3 +1,6 @@
+Line is not orange it is blue
+Line should be thicker (2 pixels?)
+
 When processing image we get about 10 FPS.  First time to make sure the problem is on the Pi
 , then enable target tracking on demand if it is.
 
